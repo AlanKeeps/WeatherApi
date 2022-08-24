@@ -157,9 +157,6 @@ class MainFragment : Fragment() {
             weatherItem.hours
         )
         model.liveDataCurrent.value = item
-        Log.d("MyLog", "city: ${item.maxTemp}")
-        Log.d("MyLog", "city: ${item.minTemp}")
-        Log.d("MyLog", "city: ${item.hours}")
     }
 
     companion object {

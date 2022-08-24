@@ -5,16 +5,21 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.weatherapi.MainViewModel
 import com.example.weatherapi.R
 import com.example.weatherapi.adapters.WeatherAdapter
 import com.example.weatherapi.adapters.WeatherModel
 import com.example.weatherapi.databinding.FragmentHoursBinding
+import org.json.JSONArray
+import org.json.JSONObject
 
 
 class HoursFragment : Fragment() {
     private lateinit var binding: FragmentHoursBinding
     private lateinit var adapter: WeatherAdapter
+    private val model: MainViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -27,45 +32,34 @@ class HoursFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         initRcView()
+        model.liveDataCurrent.observe(viewLifecycleOwner){
+            adapter.submitList(getHoursList(it))
+        }
     }
 
     private fun initRcView() = with(binding){
         rcView.layoutManager = LinearLayoutManager(activity)
         adapter = WeatherAdapter()
         rcView.adapter = adapter
-        val list = listOf(
-            WeatherModel(
+    }
+
+    private fun getHoursList(wItem: WeatherModel): List<WeatherModel>{
+        val hoursArray = JSONArray(wItem.hours)
+        val list = ArrayList<WeatherModel>()
+        for (i in 0 until hoursArray.length()){
+            val item = WeatherModel(
                 "",
-                "12:00",
-                "sunny",
-                "30C",
-                "",
-                "",
-                "",
-                ""
-            ),
-            WeatherModel(
-                "",
-                "13:00",
-                "sunny",
-                "32C",
+                (hoursArray[i] as JSONObject).getString("time"),
+                (hoursArray[i] as JSONObject).getJSONObject("condition").getString("text"),
+                (hoursArray[i] as JSONObject).getString("temp_c") + "°C",
                 "",
                 "",
-                "",
-                ""
-            ),
-            WeatherModel(
-                "",
-                "14:00",
-                "sunny",
-                "33C",
-                "",
-                "",
-                "",
+                (hoursArray[i] as JSONObject).getJSONObject("condition").getString("icon"),
                 ""
             )
-        )
-        adapter.submitList(list)
+            list.add(item)
+        }
+        return list
     }
 
     companion object {
